@@ -1,0 +1,210 @@
+FORMAT: 1A
+HOST: http://polls.apiblueprint.org/
+
+# Pricing Engine Api On GitHub
+
+Polls is a simple API allowing consumers to view polls and vote in them.
+
+## Questions Collection [/questions]
+
+### List All Questions [GET]
+
++ Response 200 (application/json)
+
+        [
+            {
+                "question": "Favourite programming language?",
+                "published_at": "2015-08-05T08:40:51.620Z",
+                "choices": [
+                    {
+                        "choice": "Swift",
+                        "votes": 2048
+                    }, {
+                        "choice": "Python",
+                        "votes": 1024
+                    }, {
+                        "choice": "Objective-C",
+                        "votes": 512
+                    }, {
+                        "choice": "Ruby",
+                        "votes": 256
+                    }
+                ]
+            }
+        ]
+
+### Create a New Question [POST]
+
+You may create your own question using this action. It takes a JSON
+object containing a question and a collection of answers in the
+form of choices.
+
++ Request (application/json)
+
+        {
+            "question": "Favourite programming language?",
+            "choices": [
+                "Swift",
+                "Python",
+                "Objective-C",
+                "Ruby"
+            ]
+        }
+
++ Response 201 (application/json)
+
+    + Headers
+
+            Location: /questions/2
+
+    + Body
+
+            {
+                "question": "Favourite programming language?",
+                "published_at": "2015-08-05T08:40:51.620Z",
+                "choices": [
+                    {
+                        "choice": "Swift",
+                        "votes": 0
+                    }, {
+                        "choice": "Python",
+                        "votes": 0
+                    }, {
+                        "choice": "Objective-C",
+                        "votes": 0
+                    }, {
+                        "choice": "Ruby",
+                        "votes": 0
+                    }
+                ]
+            }
+FORMAT: 1A
+HOST: http://pricing.wapanda.net
+
+# Pricing Engine
+Pricing engine provides functionality for ride and trip pricing calculations.
+This document details the API for pricing engine's HTTP interface.
+
+## Estimate [/estimate]
+
+### Estimate ride price [POST]
+* Pricing engine is provided a planned trip route and multiple available rides. 
+* Pricing engine provides estimated trip price of each ride, based on ride's driver rate.
+
++ Request (application/json)
+    + Attributes (object)
+        + `route` (Route, required) - Planned route
+        + `rides` (array[Ride], required) - Available rides
+
+
++ Response 200 (application/json)
+    + Attributes (array[RidePrice])
+
+
+## Fair Price [/fairprice]
+
+### Predict fair price [POST]
+* Pricing engine is provided a planned trip route and car type.
+* Pricing engine provides estimates of fair prices for such a trip.
+
++ Request (application/json)
+    + Attributes (object)
+        + `route` (Route, required) - Planned route
+        + `carType` (CarType, required) - Car type
+        
++ Response 200 (application/json)
+    + Attributes (FairPrice)
+
+
+## Finalize [/finalize]
+
+### Save trip and adjust price [POST]
+* Pricing engine is provided with information of an ended trip.
+* Pricing engine save the useful information for future analysis.
+* Pricing engine provides an adjusted trip price, based on applicable changes applied.
+
+
++ Request (application/json)
+    + Attributes (TripInfo)
+        
++ Response 200 (application/json)
+    + Attributes (PriceAdjust)
+
+
+# Data Structures
+
+## GeoPoint (object)
+A GeoJSON Point type geometry
+
+### Properties
++ `type`: `point` (string, required) - Type of GeoJSON Geometry
++ `coordinates`: 77.68,24.56 (array[number], required) - Point position coordinates
+
+## CarType (enum)
++ `Taxi` (string)
++ `Standard` (string)
++ `SUV` (string)
++ `XL` (string)
++ `BlackCar` (string)
+
+## Route (object)
+Planned trip route
+
+### Properties
++ `from` (GeoPoint, required) - Trip start location
++ `to` (GeoPoint, required) - Trip end location
++ `estDistance`: 6800 (number, required) - Estimated distance in meters
++ `estDuration`: 3649 (number, required) - Estimated duration in seconds
++ `startTime`: `2017-09-11T08:35:04.586Z` (string, required) - Start date time in ISO8601 format
+
+## Ride (object)
+Ride details
+
+### Properties
++ `driverId`: `afbe99d288c893e` (string, required) - Driver ID
++ `carType`: `Standard` (CarType, required) - Ride car type
++ `driverRate`: 10.25 (number, required) - Driver rate in USD
+
+## RidePrice (Ride)
+Ride details with estimated price
+
+### Properties
++ `estPrice`: 12.75 (number, required) - Estimated ride price in USD
+
+## FairPrice (object)
+Fair price for a car type on a planned route
+
+### Properties
++ `typicalPrice`: 28.75 (number, required) - Typical fair price in USD
++ `lowPrice`: 24.25 (number, required) - Lowest fair price in USD
++ `highPrice`: 30.50 (number, required) - Highest fair price in USD
++ `validUntil`: `2017-09-11T08:12:31.162Z` (string, required) - Price expiry date time in ISO8601 format
+
+## TripInfo (object)
+Details of a finished trip
+
+### Properties
++ `route` (Route, required) - Trip route
++ `ride` (Ride, required) - Trip ride
++ `ridePrice` (RidePrice, required) - Trip ride price
++ `fairPrice` (FairPrice, required) - Trip fair price
++ `tripPrice`: 12.75 (number, required) - Accepted price for trip
++ `tripStartTime`: `2017-09-11T10:26:27.744Z` (string, required) - Trip start date time in ISO8601 format
++ `tripEndTime`: `2017-09-11T11:16:07.463Z` (string, required) - Trip end date time in ISO8601 format
++ `tripDuration`: 3897 (number, required) - Trip duration in seconds
++ `tripDistance`: 6989 (number, required) - Trip distance travelled
+
+
+## PriceChange (object)
+A change to trip price
+
+### Properties
++ `change`: 01.50 (number, required) - Change to trip price in USD
++ `reason`: `Actual distance more than planned` (string, required) - Detail about change
+
+## PriceAdjust (object)
+Overall adjustment to trip price
+
+### Properties
++ `adjustedPrice`: 14.50 (number, required) - Adjusted trip price in USD
++ `changes` (array[PriceChange], required) - Changes to trip price
