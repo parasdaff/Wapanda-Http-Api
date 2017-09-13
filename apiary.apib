@@ -51,14 +51,25 @@ This document details the API for pricing engine's HTTP interface.
     + Attributes (PriceAdjust)
 
 
+
 # Data Structures
+
+## MoneyRepresentation (object)
+Describes the typical minimum amount of money increments and currency code ISO 4217.
+Examples:
+USD is a typical currency trading in cents.  
+JPY is a typical currency trading in units of Yens. 
+### Properties
++ `increment`: 0.01 (number, required) - Minimum amount of money increments 
++ `isocode`: `USD` (string, required) - Currency code ISO 4217
+
 
 ## GeoPoint (object)
 A GeoJSON Point type geometry
-
 ### Properties
 + `type`: `point` (string, required) - Type of GeoJSON Geometry
 + `coordinates`: 77.68,24.56 (array[number], required) - Point position coordinates
+
 
 ## CarType (enum)
 + `Taxi` (string)
@@ -67,9 +78,9 @@ A GeoJSON Point type geometry
 + `XL` (string)
 + `BlackCar` (string)
 
+
 ## Route (object)
 Planned trip route
-
 ### Properties
 + `from` (GeoPoint, required) - Trip start location
 + `to` (GeoPoint, required) - Trip end location
@@ -77,32 +88,39 @@ Planned trip route
 + `estDuration`: 3649 (number, required) - Estimated duration in seconds
 + `startTime`: `2017-09-11T08:35:04.586Z` (string, required) - Start date time in ISO8601 format
 
+
 ## Ride (object)
 Ride details
-
 ### Properties
 + `driverId`: `afbe99d288c893e` (string, required) - Driver ID
 + `carType`: `Standard` (CarType, required) - Ride car type
-+ `driverRate`: 10.25 (number, required) - Driver rate in USD
++ `currency` (MoneyRepresentation, required)
++ `driverDistanceRuler`: 1609 (number, required) - Distance, in meters, to use for the driver rate per Distance
++ `driverRatePerMinute`: 0.75 (number, required) - Driver rate per minute driven
++ `driverRatePerDistance`: 1.1 (number, required) - Driver rate per unit of driverDistanceRuler
++ `driverMinimumRate`: 7.0 (number, required) - Minimum fare requested by the driver
+
 
 ## RidePrice (Ride)
 Ride details with estimated price
-
 ### Properties
-+ `estPrice`: 12.75 (number, required) - Estimated ride price in USD
++ `estPrice`: 12.75 (number, required) - Estimated ride price according to driver's rate
+
 
 ## FairPrice (object)
 Fair price for a car type on a planned route
-
 ### Properties
-+ `typicalPrice`: 28.75 (number, required) - Typical fair price in USD
-+ `lowPrice`: 24.25 (number, required) - Lowest fair price in USD
-+ `highPrice`: 30.50 (number, required) - Highest fair price in USD
-+ `validUntil`: `2017-09-11T08:12:31.162Z` (string, required) - Price expiry date time in ISO8601 format
++ `currency` (MoneyRepresentation, required)
++ `typicalPrice`: 28.75 (number, required) - Typical price that is charged for the ride under typical conditions of weather, traffic, demand
++ `fairPrice`: 29.95 (number, required) - Estimated fair price in current conditions
++ `fairPriceLow`: 28.18 (number, required) - Estimated lower range of fair price in current conditions
++ `fairPriceHigh`: 32.50 (number, required) - Estimated higher range of fair price in current conditions
++ `minimumPrice`: 20.50 (number, required) - Lowest price for a similar ride ever observed
++ `maximumPrice`: 53.10 (number, required) - Highest price for a similar ride ever observed
+
 
 ## TripInfo (object)
 Details of a finished trip
-
 ### Properties
 + `route` (Route, required) - Trip route
 + `ride` (Ride, required) - Trip ride
@@ -117,14 +135,14 @@ Details of a finished trip
 
 ## PriceChange (object)
 A change to trip price
-
 ### Properties
-+ `change`: 01.50 (number, required) - Change to trip price in USD
++ `change`: 1.50 (number, required) - Change to trip price
 + `reason`: `Actual distance more than planned` (string, required) - Detail about change
+
 
 ## PriceAdjust (object)
 Overall adjustment to trip price
-
 ### Properties
-+ `adjustedPrice`: 14.50 (number, required) - Adjusted trip price in USD
++ `currency` (MoneyRepresentation, required)
++ `adjustedPrice`: 14.50 (number, required) - Adjusted trip price 
 + `changes` (array[PriceChange], required) - Changes to trip price
