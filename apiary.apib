@@ -37,11 +37,14 @@ calculations. This document details the API for the pricing engine's HTTP interf
         
 + Response 200 (application/json)
     + Attributes (object)
-        + ``prices` (array[RidePrice], required) - List of price and fair prices for each driver based on own rate
+        + `prices` (array[RidePrice], required) - List of price and fair prices for each driver based on own rate
 
-
++ Response 404
+    Returned if in the array of drivers a car type unknown to the server is found
+    + Body
+    
 ## Finalize [/finalize]
-
+nted 
 ### Save trip and adjust price [POST]
 * Pricing engine is provided with information of an ended trip.
 * Pricing engine save the useful information for future analysis.
@@ -90,6 +93,11 @@ A GeoPoint with time info that localizes an event in time and space
 + `XL` (string)
 + `BlackCar` (string)
 
+## OneIndex
+A single container of cartype and ongoing (index) rates
+### Properties
++ `cartype`: `Taxi` (CarType, required) 
++ `indexrate`: 11.0 (number, required) - ongoing rate, index for this car type
 
 ## IndexView(object)
 A view of the current ongoing rates for all car types
@@ -97,12 +105,8 @@ A view of the current ongoing rates for all car types
 + `localization` (Localization, required) - Driver location
 + `expirytime`: `PT0H10M0S` (string, required) - ISO8601 format of time duration. Refresh the index view before such a time has elapsed.
 + `validRadius`: 5.0 (number, required) - Km from the original location where the index is valid.
-+ `taxiRate`: 12.0 (number, required) - Ongoing rate for a Taxi.
-+ `standardRate`: 10.0 (number, required) - Ongoing rate for a Standard car.
-' `xLRate`:13.0 (number, required) - Ongoing rate for a XL car.
-+ `blackCarRate`:15.0 (number, required) - Ongoing rate for a BlackCar type.
-+ `sUVRate`:19.0 (number, required) - Ongoing rate for a SUV.
 + `moneyview` (MoneyRepresentation, required) - How the rates have been expressed.
++ `indexArray` (array[OneIndex], required) - List of car types with index values. 
 
 
 ## DriverRatio (object)
