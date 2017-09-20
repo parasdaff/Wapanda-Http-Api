@@ -2,38 +2,42 @@ FORMAT: 1A
 HOST: http://pricing.wapanda.net
 
 # Pricing Engine
-Pricing engine provides functionality for ride and trip pricing calculations.
-This document details the API for pricing engine's HTTP interface.
+Pricing engine provides functionality for ride index definitions and trip pricing 
+calculations. This document details the API for the pricing engine's HTTP interface. 
 
-## Estimate [/estimate]
+## Indexview [/indexview]
 
-### Estimate ride price [POST]
-* Pricing engine is provided a planned trip route and multiple available rides. 
-* Pricing engine provides estimated trip price of each ride, based on ride's driver rate.
-
-+ Request (application/json)
-    + Attributes (object)
-        + `route` (Route, required) - Planned route
-        + `rides` (array[Ride], required) - Available rides
-
-
-+ Response 200 (application/json)
-    + Attributes (array[RidePrice])
-
-
-## Fair Price [/fairprice]
-
-### Predict fair price [POST]
-* Pricing engine is provided a planned trip route and car type.
-* Pricing engine provides estimates of fair prices for such a trip.
+### Create or refresh a view of the ride price indices for all car types [POST]
+* Pricing engine is provided with a driver location and driver online time. 
+* Pricing engine provides the index of ongoing rates for all car types.
+* Application calls this method before a driver going online, and periodically. 
+* Application uses the indexes of "ongoing prices" as reference points in slide bar
+* Application will store in memory the ratio of the selected ongoing rate to the driver car ongoing rate.
+* On a refresh of the ongoing rates application will update the ratio, and notify the driver of the new ongoing rate.
 
 + Request (application/json)
     + Attributes (object)
-        + `route` (Route, required) - Planned route
-        + `carType` (CarType, required) - Car type
+        + `location` (Localization, required) - Driver's location
         
 + Response 200 (application/json)
-    + Attributes (FairPrice)
+    + Attributes (object)
+        + `indexview` (IndexView, required) - Current Index of ongoing rates for each car type 
+
+
+## Ride Pricing [/price]
+
+### Predict ride price [POST]
+* Pricing engine is provided a planned trip route and a list of car types each with their own ratio to the index.
+* Pricing engine provides estimates of price charged by each of them as well as fair prices for each of them.
+
++ Request (application/json)
+    + Attributes (object)
+        + `route` (Route, required) - Planned route
+        + `drivers` (array[DriverRatio], required) - List of drivers with their own ratios in the radius of "call" for a ride
+        
++ Response 200 (application/json)
+    + Attributes (object)
+        + ``prices` (array[RidePrice], required) - List of price and fair prices for each driver based on own rate
 
 
 ## Finalize [/finalize]
@@ -60,7 +64,7 @@ Examples:
 USD is a typical currency trading in cents.  
 JPY is a typical currency trading in units of Yens. 
 ### Properties
-+ `increment`: 0.01 (number, required) - Minimum amount of money increments 
++ `increment`: 0.01 (number, required) - Minimum amount of money increments, rounding at that level 
 + `isocode`: `USD` (string, required) - Currency code ISO 4217
 
 
@@ -71,12 +75,43 @@ A GeoJSON Point type geometry
 + `coordinates`: 77.68,24.56 (array[number], required) - Point position coordinates
 
 
+## Localization
+A GeoPoint with time info that localizes an event in time and space
+### Properties
++ `geoloc` (GeoPoint, required) 
++ `time`: `2017-09-11T08:35:04.586Z` - Current time in ISO8601 format
++ `moneyview` (MoneyRepresentation, required) - will apply to all monetary values for this localization
+
+
 ## CarType (enum)
 + `Taxi` (string)
 + `Standard` (string)
 + `SUV` (string)
 + `XL` (string)
 + `BlackCar` (string)
+
+
+## IndexView(object)
+A view of the current ongoing rates for all car types
+### Properties
++ `localization` (Localization, required) - Driver location
++ `expirytime`: `PT0H10M0S` (string, required) - ISO8601 format of time duration. Refresh the index view before such a time has elapsed.
++ `validRadius`: 5.0 (number, required) - Km from the original location where the index is valid.
++ `taxiRate`: 12.0 (number, required) - Ongoing rate for a Taxi.
++ `standardRate`: 10.0 (number, required) - Ongoing rate for a Standard car.
+' `xLRate`:13.0 (number, required) - Ongoing rate for a XL car.
++ `blackCarRate`:15.0 (number, required) - Ongoing rate for a BlackCar type.
++ `sUVRate`:19.0 (number, required) - Ongoing rate for a SUV.
++ `moneyview` (MoneyRepresentation, required) - How the rates have been expressed.
+
+
+## DriverRatio (object)
+The current ratio and most recent rate for the driver car type
+### Properties
++ `driverId`: `afbe99d288c893e` (string, required) - Driver ID
++ `cartype`: `Standard` (CarType, required) - Driver's car.
++ `ratio`: 0.90 (number, required) - the driver's ratio (driver selected rate/ original ongoing rate) 
++ `indexRate`: 10.0 (number, required) - the most recent index for this driver's car type
 
 
 ## Route (object)
@@ -89,28 +124,9 @@ Planned trip route
 + `startTime`: `2017-09-11T08:35:04.586Z` (string, required) - Start date time in ISO8601 format
 
 
-## Ride (object)
-Ride details
+## FairPrice(object)
+Information regarding typical price and current fair price for a ride
 ### Properties
-+ `driverId`: `afbe99d288c893e` (string, required) - Driver ID
-+ `carType`: `Standard` (CarType, required) - Ride car type
-+ `currency` (MoneyRepresentation, required)
-+ `driverDistanceRuler`: 1609 (number, required) - Distance, in meters, to use for the driver rate per Distance
-+ `driverRatePerMinute`: 0.75 (number, required) - Driver rate per minute driven
-+ `driverRatePerDistance`: 1.1 (number, required) - Driver rate per unit of driverDistanceRuler
-+ `driverMinimumRate`: 7.0 (number, required) - Minimum fare requested by the driver
-
-
-## RidePrice (Ride)
-Ride details with estimated price
-### Properties
-+ `estPrice`: 12.75 (number, required) - Estimated ride price according to driver's rate
-
-
-## FairPrice (object)
-Fair price for a car type on a planned route
-### Properties
-+ `currency` (MoneyRepresentation, required)
 + `typicalPrice`: 28.75 (number, required) - Typical price that is charged for the ride under typical conditions of weather, traffic, demand
 + `fairPrice`: 29.95 (number, required) - Estimated fair price in current conditions
 + `fairPriceLow`: 28.18 (number, required) - Estimated lower range of fair price in current conditions
@@ -119,13 +135,21 @@ Fair price for a car type on a planned route
 + `maximumPrice`: 53.10 (number, required) - Highest price for a similar ride ever observed
 
 
+## RidePrice (object)
+Driver's own estimated price according to his ratio to the index, and fair price for a car type on a planned route
+### Properties
++ `driverRatio` (DriverRatio, required) - The driver's specific ratio and car type
++ `estPrice`: 25.75 (number, required) - Ride price according to driver's rate. The amount that will be charged.
++ `moneyview` (MoneyRepresentation, required)
++ `fairValues` (FairPrice, required) - The fields defining fair and typical prices for the ride
+
+
 ## TripInfo (object)
 Details of a finished trip
 ### Properties
 + `route` (Route, required) - Trip route
-+ `ride` (Ride, required) - Trip ride
-+ `ridePrice` (RidePrice, required) - Trip ride price
-+ `fairPrice` (FairPrice, required) - Trip fair price
++ `driverRatio` (DriverRatio, required) - Driver info and own ratio at the time of booking
++ `fairPrice` (FairPrice, required) - Trip fair price view at the time of booking
 + `tripPrice`: 12.75 (number, required) - Accepted price for trip
 + `tripStartTime`: `2017-09-11T10:26:27.744Z` (string, required) - Trip start date time in ISO8601 format
 + `tripEndTime`: `2017-09-11T11:16:07.463Z` (string, required) - Trip end date time in ISO8601 format
@@ -134,15 +158,14 @@ Details of a finished trip
 
 
 ## PriceChange (object)
-A change to trip price
+Suggested changes to trip price.
 ### Properties
 + `change`: 1.50 (number, required) - Change to trip price
 + `reason`: `Actual distance more than planned` (string, required) - Detail about change
 
 
 ## PriceAdjust (object)
-Overall adjustment to trip price
+Overall adjustment to trip price, for now these are computed but not used in billing. The price charged is the one that was agreed at the time of booking 
 ### Properties
 + `currency` (MoneyRepresentation, required)
-+ `adjustedPrice`: 14.50 (number, required) - Adjusted trip price 
 + `changes` (array[PriceChange], required) - Changes to trip price
