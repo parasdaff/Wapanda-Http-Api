@@ -114,7 +114,7 @@ The current ratio and most recent rate for the driver car type
 ### Properties
 + `driverId`: `afbe99d288c893e` (string, required) - Driver ID
 + `cartype`: `Standard` (CarType, required) - Driver's car.
-+ `ratio`: 0.90 (number, required) - the driver's ratio (driver selected rate/ original ongoing rate) 
++ `driverRatio`: 0.90 (number, required) - the driver's ratio (driver selected rate/ original ongoing rate) 
 + `indexRate`: 10.0 (number, required) - the most recent index for this driver's car type
 
 
@@ -126,7 +126,7 @@ Planned trip route
 + `estDistance`: 6800 (number, required) - Estimated distance in meters
 + `estDuration`: 3649 (number, required) - Estimated duration in seconds
 + `startTime`: `2017-09-11T08:35:04.586Z` (string, required) - Start date time in ISO8601 format
-
++ `moneyview` (MoneyRepresentation, required) - How the rates should be expressed.
 
 ## FairPrice(object)
 Information regarding typical price and current fair price for a ride
@@ -171,5 +171,5 @@ Suggested changes to trip price.
 ## PriceAdjust (object)
 Overall adjustment to trip price, for now these are computed but not used in billing. The price charged is the one that was agreed at the time of booking 
 ### Properties
-+ `currency` (MoneyRepresentation, required)
++ `moneyview` (MoneyRepresentation, required)
 + `changes` (array[PriceChange], required) - Changes to trip price
