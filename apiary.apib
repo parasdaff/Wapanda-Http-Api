@@ -38,6 +38,7 @@ calculations. This document details the API for the pricing engine's HTTP interf
 + Response 200 (application/json)
     + Attributes (object)
         + `prices` (array[RidePrice], required) - List of price and fair prices for each driver based on own rate
+        + `thirdpartyestimators`  (ThirdPartyEstimators, required) - List of our own estimate of the thrid party views
 
 + Response 404
     Returned if in the array of drivers a car type unknown to the server is found
@@ -56,7 +57,7 @@ nted
         
 + Response 200 (application/json)
     + Attributes (PriceAdjust)
-
+Adding explicitely 
 
 
 # Data Structures
@@ -93,11 +94,13 @@ A GeoPoint with time info that localizes an event in time and space
 + `XL` (string)
 + `BlackCar` (string)
 
+
 ## OneIndex
 A single container of cartype and ongoing (index) rates
 ### Properties
 + `cartype`: `Taxi` (CarType, required) 
 + `indexrate`: 11.0 (number, required) - ongoing rate, index for this car type
+
 
 ## IndexView(object)
 A view of the current ongoing rates for all car types
@@ -128,6 +131,7 @@ Planned trip route
 + `startTime`: `2017-09-11T08:35:04.586Z` (string, required) - Start date time in ISO8601 format
 + `moneyview` (MoneyRepresentation, required) - How the rates should be expressed.
 
+
 ## FairPrice(object)
 Information regarding typical price and current fair price for a ride
 ### Properties
@@ -137,6 +141,21 @@ Information regarding typical price and current fair price for a ride
 + `fairPriceHigh`: 32.50 (number, required) - Estimated higher range of fair price in current conditions
 + `minimumPrice`: 20.50 (number, required) - Lowest price for a similar ride ever observed
 + `maximumPrice`: 53.10 (number, required) - Highest price for a similar ride ever observed
+
+
+## ThirdPartyEstimatedPrice (object)
+Our own estimate of a third party service price
+### Properties
++ `thirdpartyname`: "Uber" (string, required) - The name of the third part service
++ `thirdpartycartype`: "UberX" (string, required) - The car type name as known for this third party provider
++ `thirdpartyestimate` (FairPrice, required) - Our estimate of the price they would charge
+
+
+## ThirdPartyEstimators (object)
+All third party cars that we can estimate.
+### Properties
++ `thirdpartyEstimates` (array[ThirdPartyEstimatedPrice], required) - All third party estimated cars
++ `moneyview` (MoneyRepresentation, required)
 
 
 ## RidePrice (object)
@@ -159,7 +178,7 @@ Details of a finished trip
 + `tripEndTime`: `2017-09-11T11:16:07.463Z` (string, required) - Trip end date time in ISO8601 format
 + `tripDuration`: 3897 (number, required) - Trip duration in seconds
 + `tripDistance`: 6989 (number, required) - Trip distance travelled
-+ `isTest`: True (boolean, required) - Was the trip a test (True) or a production real ride (False).
++ `isTest`: true (boolean, required) - Was the trip a test (True) or a production real ride (False).
 
 
 ## PriceChange (object)
