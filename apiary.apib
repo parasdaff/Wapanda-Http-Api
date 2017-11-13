@@ -96,10 +96,14 @@ A GeoPoint with time info that localizes an event in time and space
 
 
 ## OneIndex
-A single container of cartype and ongoing (index) rates
+A single container of cartype and ongoing (index) rates, 
+fare is composed of basefare, fare per minute and per mile, however these will be indicative.
 ### Properties
 + `cartype`: `Taxi` (CarType, required) 
 + `indexrate`: 11.0 (number, required) - ongoing rate, index for this car type
++ `basefare`: 3.0 (number, required) - can be zero, the base fare for this car type 
++ `minutefare`: 0.55 (number, required) - the fare per minute
++ `milefare`: 1.75 (number, required) - the fare per mile 
 
 
 ## IndexView(object)
