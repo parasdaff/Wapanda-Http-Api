@@ -145,7 +145,7 @@ Information regarding typical price and current fair price for a ride
 + `fairPriceHigh`: 32.50 (number, required) - Estimated higher range of fair price in current conditions
 + `minimumPrice`: 20.50 (number, required) - Lowest price for a similar ride ever observed
 + `maximumPrice`: 53.10 (number, required) - Highest price for a similar ride ever observed
-
++ `basicPrice`: 28.0 (number, required) - Price using basic fare components
 
 ## ThirdPartyEstimatedPrice (object)
 Our own estimate of a third party service price
@@ -169,6 +169,7 @@ Driver's own estimated price according to his ratio to the index, and fair price
 + `estPrice`: 25.75 (number, required) - Ride price according to driver's rate. The amount that will be charged.
 + `moneyview` (MoneyRepresentation, required)
 + `fairValues` (FairPrice, required) - The fields defining fair and typical prices for the ride
++ `levels` (array[BidLevel], required) - Bid levels.
 
 
 ## TripInfo (object)
@@ -184,16 +185,27 @@ Details of a finished trip
 + `tripDistance`: 6989 (number, required) - Trip distance travelled
 + `isTest`: true (boolean, required) - Was the trip a test (True) or a production real ride (False).
 
-
 ## PriceChange (object)
 Suggested changes to trip price.
 ### Properties
 + `change`: 1.50 (number, required) - Change to trip price
 + `reason`: `Actual distance more than planned` (string, required) - Detail about change
 
-
 ## PriceAdjust (object)
 Overall adjustment to trip price, for now these are computed but not used in billing. The price charged is the one that was agreed at the time of booking 
 ### Properties
 + `moneyview` (MoneyRepresentation, required)
 + `changes` (array[PriceChange], required) - Changes to trip price
+
+## BidIndicator (enum)
++ `Low` (string)
++ `Low to Fair` (string)
++ `Fair` (string)
++ `Fair to High` (string)
++ `High` (string)
+
+## BidLevel (object)
+Represents a price level available for bidding
+### Properties
++ `levelPrice`: 34.25 (number, required) - Price level.
++ `indicator`: Low (BidIndicator, required) - low / high indicator
