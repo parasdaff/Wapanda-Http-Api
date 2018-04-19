@@ -213,3 +213,17 @@ Represents a price level available for bidding
 ### Properties
 + `levelPrice`: 34.25 (number, required) - Price level.
 + `indicator`: Low (BidIndicator, required) - low / high indicator
+
+## ServiceAvalability [/ServiceAvalability]
+
+### Check for the service avalability in particular area [POST]
+* Api will check if wapanda is available in the area or not
+
++ Request (application/json)
+    + Attributes (object)
+        + `location`(lat: Double, lng: Double)- Rider/Driver's location
+        
++ Response 200 (application/json)
+    + Attributes (object)
+        + isAvailable: True/false
+        
